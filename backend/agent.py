@@ -1,11 +1,11 @@
-from langchain_openai import ChatOpenAI
-from langchain.agents import create_openai_tools_agent, AgentExecutor
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from backend.tools import web_search
 import os
 
 def get_agent_executor():
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0)
     
     tools = [web_search]
     
@@ -15,7 +15,7 @@ def get_agent_executor():
         MessagesPlaceholder(variable_name="agent_scratchpad"),
     ])
     
-    agent = create_openai_tools_agent(llm, tools, prompt)
+    agent = create_tool_calling_agent(llm, tools, prompt)
     
     # BUG: return_intermediate_steps=False by default, so we can't see thoughts easily
     executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
