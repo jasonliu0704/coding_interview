@@ -1,10 +1,10 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChat } from './hooks/useChat';
-// import ThoughtTrace from './components/ThoughtTrace'; // Uncomment when implemented
+import ThoughtTrace from './components/ThoughtTrace';
 
 export default function Home() {
-  const { messages, sendMessage, loading } = useChat();
+  const { messages, thought, sendMessage, loading } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -15,9 +15,10 @@ export default function Home() {
     setInput('');
   };
 
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, thought]);
 
   return (
     <main className="container">
@@ -25,7 +26,7 @@ export default function Home() {
         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, backgroundImage: 'linear-gradient(to right, #60a5fa, #a78bfa)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
           Research Agent
         </h1>
-        <p style={{ color: '#94a3b8' }}>Coding Challenge</p>
+        <p style={{ color: '#94a3b8' }}>Powered by LangChain & Next.js</p>
       </header>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', paddingBottom: '2rem' }}>
@@ -35,13 +36,8 @@ export default function Home() {
           </div>
         ))}
 
-        {loading && (
-          <div style={{ color: '#94a3b8', fontStyle: 'italic', paddingLeft: '1rem' }}>
-            Agent is thinking... (This can take a while)
-          </div>
-        )}
-
-        {/* TASK: Render the ThoughtTrace component here when active */}
+        {/* Thought Trace handles its own visibility */}
+        <ThoughtTrace status={thought.status} content={thought.content} />
 
         <div ref={messagesEndRef} />
       </div>
@@ -51,7 +47,7 @@ export default function Home() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me a question..."
+            placeholder="Ask me a question (e.g., 'Learn about LangChain')"
             disabled={loading}
           />
           <button type="submit" disabled={loading}>

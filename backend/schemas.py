@@ -1,9 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
     message: str
 
 class WebSearchSchema(BaseModel):
-    """Schema for the web search tool."""
-    # Task 1.1 Fix: Explicitly define query with description so LLM understands it
-    query: str = Field(description="The search query to enter into the search engine.")
+    # BUG: Missing description for 'query' causing potential LLM confusion
+    query: str

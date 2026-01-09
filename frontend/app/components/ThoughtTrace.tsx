@@ -1,24 +1,13 @@
-'use client';
-
-import { motion } from 'framer-motion';
-
 type ThoughtProps = {
-  status: 'searching' | 'done' | 'idle';
-  content: string;
+  // TODO: Define props for the thought trace
 };
 
-export default function ThoughtTrace({ status, content }: ThoughtProps) {
-  if (status === 'idle' || !content) return null;
-
+export default function ThoughtTrace(props: ThoughtProps) {
+  // TASK: Implement a component that shows the user what the agent is doing (e.g. "Searching...")
+  // This should appear before the final answer.
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0 }}
-      className="thought-trace"
-    >
-      {status === 'searching' && <div className="spinner" />}
-      <span>{content}</span>
-    </motion.div>
+    <div className="thought-trace">
+      {/* Placeholder */}
+    </div>
   );
 }

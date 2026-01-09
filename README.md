@@ -1,72 +1,52 @@
-# Research Agent Coding Challenge
+# The Practical Challenge: "The Research Agent" (60 Minutes)
 
-This repository contains the solution for the "Research Agent" practical challenge. It consists of a FastAPI backend and a Next.js frontend.
+This repository contains a basic FastAPI backend and a React (Next.js) frontend. 
 
-## Features Implemented
+**The Goal:** The agent successfully uses a "web_search" tool, but the implementation is buggy and provides a poor user experience. Your job is to fix the schema issues and upgrade the system to support real-time streaming of "thoughts" and answers.
 
-1.  **Backend (FastAPI + LangChain)**:
-    *   **Schema Fix**: `WebSearchSchema` correctly defines the `query` field with a description so the LLM knows how to use it.
-    *   **Streaming**: The agent uses `astream_events` to stream both "thoughts" (tool usage status) and the final "answer" in real-time.
-    *   **Fake Web Search**: A simulated tool that returns mock results for stability.
+## 1. Python Backend Task (25 Minutes)
 
-2.  **Frontend (Next.js + React)**:
-    *   **Real-time Streaming**: A custom `useChat` hook handles the `ndjson` stream.
-    *   **Thought Trace**: A UI component that displays "Searching..." animations while the backend is processing tool calls, separate from the final text response.
-    *   **Modern Design**: Styled with vanilla CSS variables, glassmorphism touches, and Framer Motion animations.
+**Scenario:** The agent uses a `web_search` tool. However, it often fails to use it correctly or crashes because of a schema definition issue. Additionally, the user has to wait ~3 seconds staring at a spinner before seeing any text.
 
-## Setup Instructions
+**The Tasks:**
+1.  **Fix the Bug:** The Pydantic schema (`backend/schemas.py`) for the web_search tool has a type/description mismatch. Fix it so the LLM correctly parses the "query" argument.
+2.  **Streaming Upgrade:** Refactor the endpoint (`backend/main.py` and `backend/agent.py`) to use `astream_events` (or a similar LangChain streaming method). 
+    *   The backend should yield JSON events for "thoughts" (e.g. `{"type": "thought", "status": "searching", ...}`) when the tool starts/ends.
+    *   It should yield "answer" events (e.g. `{"type": "answer", "content": "The result is..."}`) as the token stream arrives.
+
+## 2. React Frontend Task (20 Minutes)
+
+**Scenario:** The UI currently just shows a loading spinner until the full text arrives (blocking HTTP request).
+
+**The Tasks:**
+1.  **Handle Streaming:** Modify `frontend/app/hooks/useChat.ts` to read a stream of newline-delimited JSON objects (NDJSON) instead of awaiting the full response.
+2.  **Visual Feedback:** Implement the `ThoughtTrace` component (`frontend/app/components/ThoughtTrace.tsx`).
+    *   It should display a "Searching..." status (with a small animation) when a "thought" event of type `searching` is received.
+    *   It should disappear or show a checkmark when the search is done.
+
+## 3. Evaluation Criteria (15 Minutes Code Walkthrough)
+
+*   **Error Resilience:** Does the frontend crash if a JSON chunk is malformed?
+*   **Context Awareness:** (Bonus/Discussion) How would you persist this conversation? Redis? Postgres?
+*   **Streaming Mastery:** Did you correctly use `ReadableStream` and `TextDecoder`?
+
+## Setup
 
 ### Backend
-
-1.  Navigate to the `backend` directory:
-    ```bash
-    cd backend
-    ```
-2.  Create a virtual environment and activate it:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
-3.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  Set your OpenAI API Key:
-    ```bash
-    export OPENAI_API_KEY="sk-..."
-    ```
-5.  Run the server:
-    ```bash
-    uvicorn main:app --reload
-    ```
-    The backend runs on `http://localhost:8000`.
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+# Create .env with OPENAI_API_KEY=...
+uvicorn main:app --reload
+```
 
 ### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-1.  Navigate to the `frontend` directory:
-    ```bash
-    cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Run the development server:
-    ```bash
-    npm run dev
-    ```
-    The frontend runs on `http://localhost:3000`.
-
-## Architecture Decisions & "Context Awareness"
-
--   **Streaming Protocol**: We use Newline Delimited JSON (ndjson) to send multiple typed events (`thought`, `answer`) over a single HTTP response stream. This allows the frontend to easily distinguish between intermediate tool activity and the final answer.
--   **Agent Memory**: currently, the conversation state is held in the React client's state and passed (simulated) or just single-turn in this simple demo.
-    *   **Production Note**: For a real-world "Research Agent," we would implement **Persistent Memory**.
-    *   **Implementation**: We would use **Redis** (for short-term caching of message history) or **PostgreSQL** (with `pgvector` for semantic search if we need to recall older conversations).
-    *   **LangChain Integration**: We would wrap the `AgentExecutor` with `RunnableWithMessageHistory` backed by a `RedisChatMessageHistory` or `PostgresChatMessageHistory` class.
-
-## Error Handling
-
--   The frontend's stream reader is wrapped in a `try/catch` block to handle potential JSON parsing errors if a chunk is split unexpectedly or if the network fails.
--   The backend also catches exceptions during the agent run and yields an error event to the client.
-# coding_interview
+Good luck!
